@@ -54,37 +54,39 @@ class Simulation():
     EMPTY = 0
     BUSY = 1
 
-    def __init__(self, simulation_time=60060):
-        self.simulation_time = simulation_time
+    def __init__(self):
+        self.simulation_time = 0
         self.clock=0
+        self.maxQueue=0
         self.events=[]
         self.queue=[]
-        self.maxQueue=0
         self.exits=[]
+        self.client2Counts=0;
         self.supervisor_state = self.EMPTY
         self.prepare_entries()
 
     def prepare_entries(self):
-        time = 0
+        time1 = 0
         id = 1
+
+        time2 = 0
+        id2 = 1
         while True:
-            time += np.random.uniform(100,150)
-            client = ClientType1(id)
-            id+=1
-            client.arrival_time = time
-            self.events.append(Event(time,Event.NEW_CLIENT1_ARRIVAL, client))
-            if time > self.simulation_time:
-                self.events.pop()
-                break
-        time = 0
-        id = 1
-        while True:
-            time += 120
-            client2 = ClientType2(id)
-            id+=1
-            client2.arrival_time = time
-            self.events.append(Event(time,Event.NEW_CLIENT2_ARRIVAL, client2))
-            if time > self.simulation_time:
+            if self.client2Counts <= 500:
+                time1 += np.random.uniform(100,150)
+                client = ClientType1(id)
+                id+=1
+                client.arrival_time = time1
+                self.events.append(Event(time1,Event.NEW_CLIENT1_ARRIVAL, client))
+
+                time2 += 120
+                client2 = ClientType2(id2)
+                id2+=1
+                client2.arrival_time = time2
+                self.events.append(Event(time2,Event.NEW_CLIENT2_ARRIVAL, client2))
+                self.client2Counts+=1
+            else:
+                self.simulation_time=time2
                 self.events.pop()
                 break
 
@@ -124,7 +126,7 @@ class Simulation():
             if self.clock > self.simulation_time:
                 break
 
-sim = Simulation(simulation_time=60060)
+sim = Simulation()
 sim.run()
 
 
@@ -150,8 +152,9 @@ for client in sim.exits:
             timeinsystem_type2_avg = client.exit_supervisor_time - client.arrival_time
         type2.append((client.exit_supervisor_time,timeinsystem_type2_avg))
 
-print("Salieron {} clientes tipo 1".format(len(type1)))
-print("Salieron {} clientes tipo 2".format(len(type2)))
-print("Tiempo promedio de clientes tipo 1: {}".format(aux1/len(type1)))
-print("Tiempo promedio de clientes tipo 2: {}".format(aux2/len(type2)))
+print("Tiempo total de simulación {} minutos ".format(sim.simulation_time))
+print("Fueron atendidos {} clientes tipo 1".format(len(type1)))
+print("Fueron atendidos {} clientes tipo 2".format(len(type2)))
+print("Tiempo promedio de estancia en la oficina para clientes tipo 1: {}".format(aux1/len(type1)))
+print("Tiempo promedio de estancia en la oficina para clientes tipo 2: {}".format(aux2/len(type2)))
 print("Máximo de clientes en la oficina: {}".format(sim.maxQueue))
